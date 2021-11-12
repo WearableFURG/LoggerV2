@@ -7,6 +7,7 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.os.Environment;
 import android.os.IBinder;
 import android.util.Log;
 import androidx.annotation.Nullable;
@@ -15,6 +16,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -106,32 +110,62 @@ public class SensorService extends Service implements SensorEventListener {
             this.startId = startId;
         }
         public void run(){
-
+            //Loop da nossa thread
             while (ativo){
                 try {
-                    Thread.sleep(5000);
+                    Thread.sleep(5000); //Aqui é feito o controle do tempo em que será armazenado no json os dados do sensor
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-                //Log.d("Coleta", "Pressão: "+valorPres);
-                //Log.d("Coleta", "Proximidade: "+valorProx);
 
-                JSONObject tSensores = new JSONObject();
+                //Aqui começa a preparação do JSON
+
+                //Criação dos arrays de JSON onde os dados dos sensores serão armazenados
                 JSONArray arPres = new JSONArray();
                 JSONArray arProx = new JSONArray();
 
+                //Objeto JSON que irá unir as listas
+                JSONObject tSensores = new JSONObject();
+
+                //Função para inserir dentro dos arrays os dados dos sensores
                 listPres.add(valorPres);
                 listProx.add(valorProx);
 
+
                 try {
+                    //Coloca os arrays normais dentro do Array JSON
                     arPres.put(listPres);
                     arProx.put(listProx);
+
+                    //Coloca os arrays JSON dentro dos objetos
                     tSensores.put("Pressao",arPres);
                     tSensores.put("Prox",arProx);
+
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
-                Log.d("Coleta", "Teste: "+tSensores);
+
+                //Criação do arquivo JSON
+                try {
+                    //Definindo o local em que o arquivo será colocado
+                    //O emulated/0[..] diz respeito ao endereço do WearOS no emulador
+                    //Logo, basta colocar o diretório real ao usar no smarthwatch
+                    File root = new File(Environment.getStorageDirectory(),"emulated/0/Documents");
+                    if (!root.exists()){
+                        root.mkdir();
+                    }
+                    //Criando o arquivo em si
+                    File filepath = new File(root,"logger.json");
+
+                    //Inserindo o objeto JSON dentro do arquivo
+                    FileWriter writer = new FileWriter(filepath);
+                    writer.append(tSensores.toString());
+                    writer.flush();
+                    writer.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
             }
             stopSelf(startId);
         }

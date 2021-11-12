@@ -10,6 +10,11 @@ import android.hardware.SensorManager;
 import android.os.IBinder;
 import android.util.Log;
 import androidx.annotation.Nullable;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -94,6 +99,8 @@ public class SensorService extends Service implements SensorEventListener {
     //Criação de uma classe de thread (Ler README)
     class Worker extends Thread{
         int startId;
+        List<Float> listPres = new ArrayList<Float>();
+        List<Float> listProx = new ArrayList<Float>();
         public boolean ativo = true;
         public Worker(int startId){
             this.startId = startId;
@@ -102,12 +109,29 @@ public class SensorService extends Service implements SensorEventListener {
 
             while (ativo){
                 try {
-                    Thread.sleep(1000);
+                    Thread.sleep(5000);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-                Log.d("Coleta", "Pressão: "+valorPres);
-                Log.d("Coleta", "Proximidade: "+valorProx);
+                //Log.d("Coleta", "Pressão: "+valorPres);
+                //Log.d("Coleta", "Proximidade: "+valorProx);
+
+                JSONObject tSensores = new JSONObject();
+                JSONArray arPres = new JSONArray();
+                JSONArray arProx = new JSONArray();
+
+                listPres.add(valorPres);
+                listProx.add(valorProx);
+
+                try {
+                    arPres.put(listPres);
+                    arProx.put(listProx);
+                    tSensores.put("Pressao",arPres);
+                    tSensores.put("Prox",arProx);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                Log.d("Coleta", "Teste: "+tSensores);
             }
             stopSelf(startId);
         }

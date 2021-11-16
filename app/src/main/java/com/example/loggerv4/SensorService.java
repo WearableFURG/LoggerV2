@@ -30,8 +30,27 @@ public class SensorService extends Service implements SensorEventListener {
     private Context ctx;
     private SensorManager sensorManager;
     //Váriaveis dos sensores, crie mais se necessário
-    public float valorProx;
     public float valorPres;
+    public float valorLux;
+
+    public float valorGirZ;
+    public float valorGirX;
+    public float valorGirY;
+
+    public float valorAceZ;
+    public float valorAceX;
+    public float valorAceY;
+
+    public List<Float> listAceZ = new ArrayList<Float>();
+    public List<Float> listAceX = new ArrayList<Float>();
+    public List<Float> listAceY = new ArrayList<Float>();
+
+    public List<Float> listGirZ = new ArrayList<Float>();
+    public List<Float> listGirX = new ArrayList<Float>();
+    public List<Float> listGirY = new ArrayList<Float>();
+
+    public List<Float> listPres = new ArrayList<Float>();
+    public List<Float> listLux = new ArrayList<Float>();
 
     //Funções para chamar a classe (Fundamentais)
     public SensorService(Context applicationContext) {
@@ -66,7 +85,9 @@ public class SensorService extends Service implements SensorEventListener {
         }
         //Função para registrar quais sensores queremos "analisar", pode acrescentar mais basta copiar
         sensorManager.registerListener(this, sensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE), 3);
-        sensorManager.registerListener(this, sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY), 3);
+        sensorManager.registerListener(this, sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT), 3);
+        sensorManager.registerListener(this, sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), 3);
+        sensorManager.registerListener(this, sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE), 3);
 
         return (super.onStartCommand(intent,flags,startId));
     }
@@ -92,8 +113,18 @@ public class SensorService extends Service implements SensorEventListener {
         if (event.sensor.getType() == Sensor.TYPE_PRESSURE) {
             valorPres = event.values[0];
         }
-        if (event.sensor.getType() == Sensor.TYPE_PROXIMITY) {
-            valorProx = event.values[0];
+        if (event.sensor.getType() == Sensor.TYPE_LIGHT) {
+            valorLux = event.values[0];
+        }
+        if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER){
+            valorAceZ = event.values[0];
+            valorAceX = event.values[1];
+            valorAceY = event.values[2];
+        }
+        if (event.sensor.getType() == Sensor.TYPE_GYROSCOPE){
+            valorGirZ = event.values[0];
+            valorGirX = event.values[1];
+            valorGirY = event.values[2];
         }
     }
     //Método para leitura do sensor (Fundamental)
@@ -103,8 +134,7 @@ public class SensorService extends Service implements SensorEventListener {
     //Criação de uma classe de thread (Ler README)
     class Worker extends Thread{
         int startId;
-        List<Float> listPres = new ArrayList<Float>();
-        List<Float> listProx = new ArrayList<Float>();
+
         public boolean ativo = true;
         public Worker(int startId){
             this.startId = startId;
@@ -112,34 +142,64 @@ public class SensorService extends Service implements SensorEventListener {
         public void run(){
             //Loop da nossa thread
             while (ativo){
-                try {
-                    Thread.sleep(5000); //Aqui é feito o controle do tempo em que será armazenado no json os dados do sensor
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-
                 //Aqui começa a preparação do JSON
 
                 //Criação dos arrays de JSON onde os dados dos sensores serão armazenados
                 JSONArray arPres = new JSONArray();
-                JSONArray arProx = new JSONArray();
+                JSONArray arLux = new JSONArray();
+
+                JSONArray arAceZ = new JSONArray();
+                JSONArray arAceX = new JSONArray();
+                JSONArray arAceY = new JSONArray();
+
+                JSONArray arGirZ = new JSONArray();
+                JSONArray arGirX = new JSONArray();
+                JSONArray arGirY = new JSONArray();
+
+                listLux.add(valorLux);
+                listPres.add(valorPres);
+
+                listAceZ.add(valorAceZ);
+                listAceX.add(valorAceX);
+                listAceY.add(valorAceY);
+
+                listGirZ.add(valorGirZ);
+                listGirX.add(valorGirX);
+                listGirY.add(valorGirY);
 
                 //Objeto JSON que irá unir as listas
                 JSONObject tSensores = new JSONObject();
 
-                //Função para inserir dentro dos arrays os dados dos sensores
-                listPres.add(valorPres);
-                listProx.add(valorProx);
-
+                try {
+                    Thread.sleep(1000); //Aqui é feito o controle do tempo em que será armazenado no json os dados do sensor
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
 
                 try {
                     //Coloca os arrays normais dentro do Array JSON
                     arPres.put(listPres);
-                    arProx.put(listProx);
+                    arLux.put(listLux);
+
+                    arAceZ.put(listAceZ);
+                    arAceX.put(listAceX);
+                    arAceY.put(listAceY);
+
+                    arGirZ.put(listGirZ);
+                    arGirX.put(listGirX);
+                    arGirY.put(listGirY);
 
                     //Coloca os arrays JSON dentro dos objetos
                     tSensores.put("Pressao",arPres);
-                    tSensores.put("Prox",arProx);
+                    tSensores.put("Lux",arLux);
+
+                    tSensores.put("AcelerometroZ",arAceZ);
+                    tSensores.put("AcelerometroX",arAceX);
+                    tSensores.put("AcelerometroY",arAceY);
+
+                    tSensores.put("GiroscopioZ",arGirZ);
+                    tSensores.put("GiroscopioX",arGirX);
+                    tSensores.put("GiroscopioY",arGirY);
 
                 } catch (JSONException e) {
                     e.printStackTrace();

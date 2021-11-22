@@ -134,7 +134,7 @@ public class SensorService extends Service implements SensorEventListener {
     //Criação de uma classe de thread (Ler README)
     class Worker extends Thread{
         int startId;
-
+        int count = 0;
         public boolean ativo = true;
         public Worker(int startId){
             this.startId = startId;
@@ -171,7 +171,9 @@ public class SensorService extends Service implements SensorEventListener {
                 JSONObject tSensores = new JSONObject();
 
                 try {
-                    Thread.sleep(1000); //Aqui é feito o controle do tempo em que será armazenado no json os dados do sensor
+                    Thread.sleep(500); //Aqui é feito o controle do tempo em que será armazenado no json os dados do sensor
+                    Log.d("TAG", "run: "+count);
+                    count++;
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -210,7 +212,8 @@ public class SensorService extends Service implements SensorEventListener {
                     //Definindo o local em que o arquivo será colocado
                     //O emulated/0[..] diz respeito ao endereço do WearOS no emulador
                     //Logo, basta colocar o diretório real ao usar no smarthwatch
-                    File root = new File(Environment.getStorageDirectory(),"emulated/0/Documents");
+                    File root = new File("/storage/","emulated/0/Documents");
+                    //File root = new File();
                     if (!root.exists()){
                         root.mkdir();
                     }

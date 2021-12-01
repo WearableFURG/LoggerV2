@@ -32,6 +32,11 @@ public class SensorService extends Service implements SensorEventListener {
     //Váriaveis dos sensores, crie mais se necessário
     public float valorPres;
     public float valorLux;
+    public float valorBPM;
+
+    public float valorSPO2;
+    public float valorECG;
+    public float valorPPG;
 
     public float valorGirZ;
     public float valorGirX;
@@ -51,6 +56,11 @@ public class SensorService extends Service implements SensorEventListener {
 
     public List<Float> listPres = new ArrayList<Float>();
     public List<Float> listLux = new ArrayList<Float>();
+
+    public List<Float> listBPM = new ArrayList<Float>();
+    public List<Float> listPPG = new ArrayList<Float>();
+    public List<Float> listECG = new ArrayList<Float>();
+    public List<Float> listSPO2 = new ArrayList<Float>();
 
     //Funções para chamar a classe (Fundamentais)
     public SensorService(Context applicationContext) {
@@ -88,6 +98,11 @@ public class SensorService extends Service implements SensorEventListener {
         sensorManager.registerListener(this, sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT), 3);
         sensorManager.registerListener(this, sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), 3);
         sensorManager.registerListener(this, sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE), 3);
+        sensorManager.registerListener(this, sensorManager.getDefaultSensor(Sensor.TYPE_HEART_RATE), 3);
+
+        //sensorManager.registerListener(this, sensorManager.getDefaultSensor(ecg), 3);
+        //sensorManager.registerListener(this, sensorManager.getDefaultSensor(ppg), 3);
+        //sensorManager.registerListener(this, sensorManager.getDefaultSensor(spo2), 3);
 
         return (super.onStartCommand(intent,flags,startId));
     }
@@ -115,7 +130,24 @@ public class SensorService extends Service implements SensorEventListener {
         }
         if (event.sensor.getType() == Sensor.TYPE_LIGHT) {
             valorLux = event.values[0];
+            valorECG = 0;
+            valorPPG = 0;
+            valorSPO2 = 0;
         }
+        if (event.sensor.getType() == Sensor.TYPE_HEART_RATE) {
+            valorBPM = event.values[0];
+        }
+        /*
+        if (event.sensor.getType() == Sensor.ecg) {
+            valorEGC = (int) event.values[0];
+        }
+        if (event.sensor.getType() == Sensor.ppg) {
+            valorPPG = (int) event.values[0];
+        }
+        if (event.sensor.getType() == Sensor.spo2) {
+            valorSPO2 = (int) event.values[0];
+        }
+        */
         if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER){
             valorAceZ = event.values[0];
             valorAceX = event.values[1];
@@ -148,6 +180,11 @@ public class SensorService extends Service implements SensorEventListener {
                 JSONArray arPres = new JSONArray();
                 JSONArray arLux = new JSONArray();
 
+                JSONArray arBPM = new JSONArray();
+                JSONArray arECG = new JSONArray();
+                JSONArray arPPG = new JSONArray();
+                JSONArray arSPO2 = new JSONArray();
+
                 JSONArray arAceZ = new JSONArray();
                 JSONArray arAceX = new JSONArray();
                 JSONArray arAceY = new JSONArray();
@@ -158,6 +195,11 @@ public class SensorService extends Service implements SensorEventListener {
 
                 listLux.add(valorLux);
                 listPres.add(valorPres);
+
+                listBPM.add(valorBPM);
+                listPPG.add(valorPPG);
+                listECG.add(valorECG);
+                listSPO2.add(valorSPO2);
 
                 listAceZ.add(valorAceZ);
                 listAceX.add(valorAceX);
@@ -171,7 +213,7 @@ public class SensorService extends Service implements SensorEventListener {
                 JSONObject tSensores = new JSONObject();
 
                 try {
-                    Thread.sleep(500); //Aqui é feito o controle do tempo em que será armazenado no json os dados do sensor
+                    Thread.sleep(1000); //Aqui é feito o controle do tempo em que será armazenado no json os dados do sensor
                     Log.d("TAG", "run: "+count);
                     count++;
                 } catch (InterruptedException e) {
@@ -182,6 +224,11 @@ public class SensorService extends Service implements SensorEventListener {
                     //Coloca os arrays normais dentro do Array JSON
                     arPres.put(listPres);
                     arLux.put(listLux);
+
+                    arBPM.put(listBPM);
+                    arPPG.put(listPPG);
+                    arSPO2.put(listSPO2);
+                    arECG.put(listECG);
 
                     arAceZ.put(listAceZ);
                     arAceX.put(listAceX);
@@ -194,6 +241,11 @@ public class SensorService extends Service implements SensorEventListener {
                     //Coloca os arrays JSON dentro dos objetos
                     tSensores.put("Pressao",arPres);
                     tSensores.put("Lux",arLux);
+
+                    tSensores.put("BPM",arBPM);
+                    tSensores.put("ECG",arECG);
+                    tSensores.put("PPG",arPPG);
+                    tSensores.put("SPO2",arSPO2);
 
                     tSensores.put("AcelerometroZ",arAceZ);
                     tSensores.put("AcelerometroX",arAceX);

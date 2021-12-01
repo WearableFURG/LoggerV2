@@ -9,8 +9,10 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Environment;
 import android.os.IBinder;
+import android.provider.Settings;
 import android.util.Log;
 import androidx.annotation.Nullable;
+import android.provider.Settings.Secure;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -29,6 +31,13 @@ public class SensorService extends Service implements SensorEventListener {
     public List<Worker> threads = new ArrayList<Worker>();
     private Context ctx;
     private SensorManager sensorManager;
+
+    // Variável ID android
+    String androidID;
+
+    // Criação global do objeto JSON
+    JSONObject tSensores = new JSONObject();
+
     //Váriaveis dos sensores, crie mais se necessário
     public float valorPres;
     public float valorLux;
@@ -62,6 +71,8 @@ public class SensorService extends Service implements SensorEventListener {
     public List<Float> listECG = new ArrayList<Float>();
     public List<Float> listSPO2 = new ArrayList<Float>();
 
+    public List<String> listID = new ArrayList();
+
     //Funções para chamar a classe (Fundamentais)
     public SensorService(Context applicationContext) {
         super();
@@ -77,10 +88,24 @@ public class SensorService extends Service implements SensorEventListener {
         return null;
     }
     //Método do service: executa apenas uma vez ao iniciar a aplicação
+
     @Override
     public void onCreate() {
         super.onCreate();
+        // Adquirindo ID android
+        androidID = Secure.getString(getContentResolver(), Secure.ANDROID_ID);
+
+        // Coloca o valor do ID apenas uma vez no objeto JSON
+        JSONArray arID = new JSONArray();
+        listID.add(androidID);
+        arID.put(listID);
+        try {
+            tSensores.put("ID_smartwatch",arID);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
+
     //Método do service: executa toda vez que o service for chamado
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -163,6 +188,7 @@ public class SensorService extends Service implements SensorEventListener {
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
     }
+
     //Criação de uma classe de thread (Ler README)
     class Worker extends Thread{
         int startId;
@@ -210,7 +236,6 @@ public class SensorService extends Service implements SensorEventListener {
                 listGirY.add(valorGirY);
 
                 //Objeto JSON que irá unir as listas
-                JSONObject tSensores = new JSONObject();
 
                 try {
                     Thread.sleep(1000); //Aqui é feito o controle do tempo em que será armazenado no json os dados do sensor
@@ -239,6 +264,7 @@ public class SensorService extends Service implements SensorEventListener {
                     arGirY.put(listGirY);
 
                     //Coloca os arrays JSON dentro dos objetos
+
                     tSensores.put("Pressao",arPres);
                     tSensores.put("Lux",arLux);
 

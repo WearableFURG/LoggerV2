@@ -130,18 +130,12 @@ public class SensorService extends Service implements SensorEventListener {
         //sensorManager.registerListener(this, sensorManager.getDefaultSensor(ecg), 3);
         //sensorManager.registerListener(this, sensorManager.getDefaultSensor(ppg), 3);
         //sensorManager.registerListener(this, sensorManager.getDefaultSensor(spo2), 3);
-
-        return (super.onStartCommand(intent,flags,startId));
+        return START_STICKY;
     }
     //Método do service: o que faz quando o serviço é encerrado
     @Override
     public void onDestroy() {
         super.onDestroy();
-        //Método para encerrar as threads
-        for(int i = 0, tam = threads.size(); i < tam;i++){
-            threads.get(i).ativo = false;
-        }
-
     }
     //Requisição para parar o serviço
     @Override
@@ -312,7 +306,7 @@ public class SensorService extends Service implements SensorEventListener {
                 }
 
             }
-            //stopSelf(startId);
+            stopSelf(startId);
         }
     }
 }

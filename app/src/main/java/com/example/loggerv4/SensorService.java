@@ -23,6 +23,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Calendar;
 
 //Classe geral para o serviço utilizando os sensores
 public class SensorService extends Service implements SensorEventListener {
@@ -72,6 +73,7 @@ public class SensorService extends Service implements SensorEventListener {
     public List<Float> listSPO2 = new ArrayList<Float>();
 
     public List<String> listID = new ArrayList();
+    public List<String> listTime = new ArrayList();
 
     //Funções para chamar a classe (Fundamentais)
     public SensorService(Context applicationContext) {
@@ -218,6 +220,7 @@ public class SensorService extends Service implements SensorEventListener {
                 JSONArray arGirZ = new JSONArray();
                 JSONArray arGirX = new JSONArray();
                 JSONArray arGirY = new JSONArray();
+                JSONArray arTime = new JSONArray();
 
                 listLux.add(valorLux);
                 listPres.add(valorPres);
@@ -234,6 +237,8 @@ public class SensorService extends Service implements SensorEventListener {
                 listGirZ.add(valorGirZ);
                 listGirX.add(valorGirX);
                 listGirY.add(valorGirY);
+
+                listTime.add(Calendar.getInstance().getTime().toString());
 
                 //Objeto JSON que irá unir as listas
 
@@ -263,8 +268,10 @@ public class SensorService extends Service implements SensorEventListener {
                     arGirX.put(listGirX);
                     arGirY.put(listGirY);
 
-                    //Coloca os arrays JSON dentro dos objetos
+                    arTime.put(listTime);
 
+                    //Coloca os arrays JSON dentro dos objetos
+                    tSensores.put("Tempo",arTime);
                     tSensores.put("Pressao",arPres);
                     tSensores.put("Lux",arLux);
 
@@ -288,10 +295,7 @@ public class SensorService extends Service implements SensorEventListener {
                 //Criação do arquivo JSON
                 try {
                     //Definindo o local em que o arquivo será colocado
-                    //O emulated/0[..] diz respeito ao endereço do WearOS no emulador
-                    //Logo, basta colocar o diretório real ao usar no smarthwatch
                     File root = new File("/storage/","emulated/0/Documents");
-                    //File root = new File();
                     if (!root.exists()){
                         root.mkdir();
                     }
@@ -308,7 +312,7 @@ public class SensorService extends Service implements SensorEventListener {
                 }
 
             }
-            stopSelf(startId);
+            //stopSelf(startId);
         }
     }
 }

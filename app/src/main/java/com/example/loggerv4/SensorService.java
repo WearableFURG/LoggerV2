@@ -25,6 +25,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Calendar;
 
+// Imports Volley (Web Service)
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
+
 //Classe geral para o serviço utilizando os sensores
 public class SensorService extends Service implements SensorEventListener {
     //Definindo as váriaveis gerais
@@ -107,6 +115,55 @@ public class SensorService extends Service implements SensorEventListener {
             e.printStackTrace();
         }
     }
+
+    // Método POST
+    public void webPost(JSONObject postData){
+        String postUrl = "https://reqres.in/api/users";
+        RequestQueue requestQueue = Volley.newRequestQueue(this);
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, postUrl, postData, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                System.out.println(response);
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                error.printStackTrace();
+            }
+        });
+        requestQueue.add(jsonObjectRequest);
+    }
+
+    //Método GET
+    public void webGet(){
+        String url = "https://reqres.in/api/users/2";
+        List<String> jsonResponses = new ArrayList<>();
+
+        RequestQueue requestQueue = Volley.newRequestQueue(this);
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                try {
+                    JSONArray jsonArray = response.getJSONArray("data");
+                    for(int i = 0; i < jsonArray.length(); i++){
+                        JSONObject jsonObject = jsonArray.getJSONObject(i);
+                        // Printa o objeto JSON
+                        System.out.println(jsonObject);
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                error.printStackTrace();
+            }
+        });
+        requestQueue.add(jsonObjectRequest);
+    }
+
 
     //Método do service: executa toda vez que o service for chamado
     @Override
@@ -239,6 +296,11 @@ public class SensorService extends Service implements SensorEventListener {
                 try {
                     Thread.sleep(1000); //Aqui é feito o controle do tempo em que será armazenado no json os dados do sensor
                     Log.d("TAG", "run: "+count);
+                    // Checkpoint para fazer o POST via web
+                    if(count % 15 == 0){
+                        // Chama o método POST com o objeto JSON
+                        webPost(tSensores);
+                    }
                     count++;
                 } catch (InterruptedException e) {
                     e.printStackTrace();
